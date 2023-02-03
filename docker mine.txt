@@ -1,0 +1,464 @@
+Devops -- Docker containerization - Deployment tool
+
+=================================================================================================
+
+1. Traditional deployment vs VM vs Container
+2. Monolythic vs microservices
+3. Docker architecture - Client / daemon / Registry
+4. docker components - dockerfile, docker images, docker containers, 
+   Docker hub - Public repository
+   Nexus - private repository
+
+Docker : Docker is a tool designed to make it easier to create, deploy, and run applications by
+         using containers.
+
+
+
+Docker daemon: 
+it act as a interface between client and server
+
+
+ apt-get update
+ apt-get install docker.io -y
+ docker version
+ docker pull httpd
+ docker run -itd --name httdpcon1 -p "8080:80" httpd
+ docker run -itd --name httpdcon2 -p "8090:80" httpd
+ docker ps -a
+ docker images
+ docker exec -it containername /bin/bash
+ ls
+ cd htdocs
+ apt-get update
+ apt-get install vim -y
+ docker stop containername
+ docker start containername
+ docker pause containername
+ docker unpause containername
+ docker kill containername ---- to kill the process and create new process id
+ docker top containername -- to find process ID, Display the running processes of a container
+ docker stats containername -- to check cpu, memory util
+ docker logs containername
+ docker inspect containername --
+ docker info  - total information about docker
+ docker ps
+ docker rm containername  -- remove 
+ docker rm -f containername  -- forcefully remove
+ docker rmi containername -- remove image
+
+
+docker run -itd --name jenkins -p "9999:8080" jenkins:2.60.3
+
+==============================================================================================================
+
+
+ 
+virtualization :: Its a process of creating a software-based, virtual version of something,(compute storage,servers,apps,etc.
+                  these virtual versions or environments are created from a single hardware systems.
+
+containerization :: so basically, an application that is being developed and deployed is bundled and wrapped
+                    together with all its configuration files and dependencies. this bundle is called container.
+
+
+Docker :: Docker is containerization platform which packages your application and all its dependencies together in the form
+          of containers so as to ensure that your application work seamlessly in any environment, be it development, test
+          and production.
+ 
+
+Docker container :: container include the applications and all of its dependencies. it shares the kernal with other
+                    containers running as isolated processes in user space on the host operating system.
+
+Dockerfile :: Docker can build images automatically by reading the instructions from a file called dockerfile.
+              A docker file a text document that contains all the commands a user could call on the command line to assemble an image.
+
+
+Docker-compose :: Docker compose is a yaml file which contains details about the services, network, and volumes for setting
+                 up the docker application.
+
+
+Docker swarm:: Docker swarm is native clustering for docker. it turns a pool of docker hosts into a single, virutal docker host.
+
+
+Docker namespace :: A namespace is one of the linux features and an important concept of containers. namespace adds a layer of isolation in container
+
+Docker machine :: docker machine is a tool that lets you install docker engine on virtual hosts. 
+
+
+Container orchestration :: container orchestration tool, that allows the user to manage multiple containers deployed across 
+                           multiple host machines.
+ 
+
+
+
+==============================================================================================================================
+
+
+
+
+======================================================================================
+
+Docker 2
+
+  1. image backup
+  2. Dockerfile - build -- exiting image -- amendment
+  3. python install
+
+#! /bin/bash
+apt-get update
+apt-get install docker.io -y
+
+
+
+steps ::  dockerHub --> Pull --> httpd --> run --> httpdcont --> exec --> containerlogin -->
+
+           from httpdcont -- commit --> myimage --> local bkp -- docker save -o /root/myimagebkp.tar myimage
+          
+           docker load -i myimagebkp.tar
+
+docker ps
+docker images
+docker commit containerid imagename
+
+docker save -o /root/myimagebkup.tar myimage
+
+la -larth
+
+docker load -i myimagename.tar ( -i means current directory)
+-----------------------------------------------------------------
+docker login 
+username:
+password:
+
+docker tag myimage iamvj23/myimage2
+docker push iamvj23/docimage2       (push-versioning & account level integration))
+
+docker logout
+
+create own docker image
+
+mkdir vimdir
+cd vimdir/
+
+vi Dockerfile
+FROM centos:7
+MAINTAINER Vijay
+RUN yum install vim wget -y
+  
+:wq!
+
+cat Dockerfile
+docker build -t vimimage .
+docker run -itd --name vimcont vimimage
+docker exec -it containerid /bin/bash
+
+open existing docker image
+
+vi Dockerfile
+FROM vimimage 
+MAINTAINER Vijay
+RUN yum install git -y
+
+docker build -t vimimage .
+docker images
+docker run -itd --name gitcont vimimage
+docker exec -it containerid /bin/bash
+
+to check vim,wget,git --version
+exit
+cd ..
+
+
+
+Python Installation:
+-----------------------------------------------------------------------------------
+mkdir pythdir
+cd pythdir
+
+vi Dockerfile
+FROM ubuntu:18.04
+ENV TZ=Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt update && apt install -y python-pip python-dev ssh python-boto3
+RUN pip  install ansible==2.4.3.0
+
+
+Esc
+:wq! enter
+
+
+docker build -t pythimg .
+docker run -itd --name pythcon pythimg
+docker exec -it 1b3a283abeed /bin/bash
+python --version
+python2 --version
+python3 --version
+=============================================================================================== 
+
+Docker3 
+
+
+FROM centos:7
+RUN yum install -y \
+       java-1.8.0-openjdk \
+       java-1.8.0-openjdk-devel
+
+ENV JAVA_HOME /etc/alternatives/jre
+
+Esc
+:wq! enter
+
+docker build -t javaimg .
+docker run -itd --name javacont javaimg
+docker exec -it containerid /bin/bash
+verify the java installation
+java -version
+
+
+vi , echo , cat , touch -- file creating commands
+
+echo "This is docker file" > index.html
+
+
+Docker Volumes:
+-----------------------------------------------------------------------------------
+Method1: Sync Container logs with Local Directory
+mkdir mylogs
+cd mylogs
+docker run -itd --name webserver -p "8010:80" -v "/root/mylogs:/usr/local/apache2/htdocs" httpd
+docker exec -it containerid /bin/bash
+cd /htdocs
+echo "This is my Docker Session" > index.html
+cat index.html
+exit
+cd /root/mylogs
+vi index.html
+check in the browser : 13.233.144.195:8010
+
+
+
+Method2: --mount
+cd /root/mylogs
+docker volume ls
+docker volume create myvol
+docker inspect myvol
+cd /var/lib/docker/volumes/myvol/_data
+docker run -itd --name webserver2 -p "8030:80" --mount source=myvol,destination=/usr/local/apache2/htdocs httpd
+docker exec -it containerid /bin/bash
+vi index.html
+check now in the browwser...
+
+
+
+Container Access through ssh protocol
+-----------------------------------------------------------------------------------
+cd /root
+vi Dockerfile
+
+FROM ubuntu:16.04
+MAINTAINER Mohan
+RUN apt-get update
+RUN apt-get install wget openssh-server -y
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN echo 'root:root123' | chpasswd
+RUN mkdir /var/run/sshd
+CMD ["/usr/sbin/sshd", "-D"]
+EXPOSE 22
+
+
+Esc
+:wq! enter
+
+docker build -t sshimage .
+docker run -itd --name sshcontainer -p "2323:22" sshimage
+connect putty with port number 2323 and check....
+user name : root
+password  : root123
+
+
+Docker Networking:
+-----------------------------------------------------------------------------------
+docker network ls
+three nws - bridge (containers launch here only) / host / none
+docker inspect bridgenetworkid
+
+Task: Bridge vs Host vs none
+
+
+Docker RCA Sample:
+-----------------------------------------------------------------------------------
+docker run -itd mysql:5.5
+docker ps -a
+docker logs nervous_goldberg
+
+Problem Statement:  
+error:database is uninitialized and password option is not specified
+You need to specify one of MYSQL_ROOT_PASSWORD, MYSQL_ALLOW_EMPTY_PASSWORD and MYSQL_RANDOM_ROOT_PASSWORD
+
+Challenge:
+Unable to launch the Container
+
+Solution:
+docker run -itd --name db -e MYSQL_ROOT_PASSWORD="Admin123" mysql:5.5
+
+
+Now, Verify using; docker ps -a
+
+
+Docker Link: Containers communications
+-----------------------------------------------------------------------------------
+#run redis container
+docker run --name some-redis -d redis
+
+#run rabbitmq container
+docker run -d --hostname my-rabbit --name some-rabbit rabbitmq
+
+#run webapps container
+docker run --name webapps -p 8080:80 --link some-redis:redis --link some-rabbit:rabbitmq nimmis/apache-php7
+
+
+docker compose:
+------/----------------------------------------------------------------------------
+Task: yml run 
+
+
+
+
+sudo apt-cache search docker-compose
+sudo apt-get install docker-compose
+docker-compose version 
+
+
+
+https://www.youtube.com/watch?v=KYk2H1Qgd5k  - K8
+https://www.youtube.com/watch?v=IO-oNtzDq98&t=702s  -- docker swarm
+
+https://www.youtube.com/watch?v=GOk4IoYhM9U&t=2534s  --- yaml 
+
+
+
+
+
+
+
+ 
+1  apt-get update
+    2  clear
+    3  apt-get install docker.io -y
+    4  docker -v
+    5  docker version
+    6  clear
+    7  docker pull httpd
+    8  docker images
+    9  docker run -itd --name httpdcon1 -p "8080:80" httpd
+   10  docker ps
+   11  docker run -itd --name httpdcon2 -p "9090:80" httpd
+   12  docker ps
+   13  clear
+   14  docker images
+   15  docker ps
+   16  docker exec -it f3279aee04e0 /bin/bash
+   17  docker images
+   18  docker ps
+   19  docker stop f
+   20  docker start f
+   21  docker pause f
+   22  docker unpause f
+   23  docker top 6
+   24  docker kill 6
+   25  docker top 6
+   26  docker start 6
+   27  docker top 6
+   28  docker stats 6
+   29  docker logs
+   30  docker logs 6
+   31  clear
+   32  docker ps --help
+   33  docker ps -l
+   34  docker ps -a
+   35  docker stop 6
+   36  docker ps -a
+   37  docker start 6
+   38  docker ps -a
+   39  docker inspect 6
+   40  cleer
+   41  clear
+   42  docker ps
+   43  docker rm 6
+   44  docker rm -f 6
+   45  docker ps
+   46  docker rmi httpd
+   47  docker images
+   48  docker ps
+   49  docker run -itd --name jenkins -p "9999:8080" jenkins:2.60.3
+   50  docker images
+   51  docker
+   52  docker rmi --help
+   53  clear
+   54  docker images
+   55  docker ps
+   56  docker run -itd -p "8080:80" httpd
+   57  docker ps
+   58  docker ps
+   59  ls
+   60  docker -v
+   61  rm docker
+   62  docker images
+   63  docker rmi jenkins:2.60.3 httpd
+   64  docker ps
+   65  docker stop 8
+   66  docker stop f
+   67  docker rmi 8 f
+   68  docker rmi -f 8 f
+   69  docker images
+   70  docker rmi -f jenkins:2.60.3
+   71  docker images
+   72  clear
+   73  docker ps
+   74  docker ps -a
+   75  clear
+   76  docker images
+   77  docker pull httpd
+   78  ls
+   79  docker ps
+   80  docker exec -it 67 /bin/bash
+   81  docker image
+   82  docker images
+   83  docker ps
+   84  docker commit 67 myimage23
+   85  docker images
+   86  clear
+   87  history
+
+
+
+
+Ec2
+S3
+VPC
+RDS
+R53
+ELB
+ASG
+
+
+GIT
+Ansible
+Docker
+Jenkins
+
+K8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,41 @@
+ELB & ASG
+Elastic Load Balancer & Auto Scaling Groups
+
+Load Balancer 4 Types
+
+Classical Load Balancer
+Application Load Balancer
+Gateway Load Balancer - IP wise
+Network Load Balancer  - VPC 
+
+Internet - Global
+Intranet - within organization
+
+
+(i) Classical Load Balancer - Homogenous content - static -  Monolithic
+(ii) Application Load Balancer - Hetrogenous content - Dynamic - Microservice 
+
+Shell Script
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+echo "This is my instance template" >/var/www/html/index.html
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+mkdir /var/www/html/carloan/
+echo "This is my carloan instance" >/var/www/html/carloan/index.html
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+mkdir /var/www/html/homeloan/
+echo "This is my Homeloan instance" >/var/www/html/homeloan/index.html
+
+#! /bin/bash
+sudo yum install httpd -y
+service httpd start
+echo "This is my classic load balancer Application" >/var/www/html/index.html
+

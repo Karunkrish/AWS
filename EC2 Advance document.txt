@@ -1,0 +1,73 @@
+EC2 ADVANCE
+
+How to increase the volume in EBS (Elastic Block Storage)
+
+Pattern
+Windows: NTFS
+Linux : Ext4
+z
+Snapshots (Volume backup) 
+d drive
+instance backup--image--AMI
+
+Windows / Linux
+This PC / df -h (c drive)
+disk management / lsblk
+c&d drive / filesystem(fs)	
+c drive - file system - /dev/xvdf/
+
+Offline- online( mkfs -t ext4 /dev/xvdf)
+Not intialize
+
+Unallocate to allocate  (mount)   mkdir /greens/ 
+
+ls - list
+
+cd - change directory -  cd /greens/
+
+extend volume 
+
+df -h
+lsblk
+
+extend > resize2fs /dev/xvdf
+
+1.df -h -->> to check the file system this pc
+2.lsblk -->> to list the volume
+3.file -s /dev/xvdf -->> to check the volume size.
+4.mkfs -t ext4 /dev/xvdf --->> to format the volume.
+5.mkdir /greens  ------> create folder
+6.mount /dev/xvdf---- Greens --->>  mounting is the process of attaching an additional filesystem on top of the currently accessible filesystem on the computer.
+7.resize2fs /dev/xvdf  -->> resize the volume.
+
+Images ( server backup) 
+1.Time reduction
+2. Cost reduction
+3. Effort reduction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+ROUTE 53
+
+DNS- domain name service
+
+name--public ip address- mapping
+
+godaddy--purchase in name--permanent name--
+
+four name server upted--integration to route 53
+
+one down and one back up server
+
+DNS PROVIDER
+
+aws
+google domains. com
+freenom
+godaddy.com
+
+port-53
+
+well-known port--(0 --1023)
+registered ports--(1024 --49151)
+dynamic or private ports--(49152--65535)
+
+instance creat--methode--
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+echo "This is my Classic Load Balancer Application" > /var/www/html/index.html
+
+
+Steps
+
+1. Create an instance with a running application 
+2. Buying a domain--godaddy
+3. Register domain--r53
+4. Mapping your DN with the IP --instance
+
+R53
+
+* Hosted Zones
+* Records Sets
+* Health Check
+
+Routing Policy
+
+ * Simple routing--
+
+ * Latency--
+
+ * Geolocation--
+
+ * Failover--
+
+
+
+#! /bin/bash
+yum install httpd -y
+service httpd start
+echo "This is my first server" > /var/www/html/index.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

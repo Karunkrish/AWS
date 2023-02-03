@@ -1,0 +1,89 @@
+EC2-  web hosting  or Application Hosting
+
+Application hosting in server
+
+instance- creat--- http--hyper text transfer protocal & secuire
+https--
+
+public ip address
+
+private ip address
+
+nslookup fb.com 
+
+DNS-domain name service--name-- number
+
+Hard ware--software--- intermediate tool ---Middle ware--helping tool
+
+Middle ware
+
+webserver
+
+appserver--
+
+Install-enhance ment-- deployment
+
+webserver-   
+
+static methode   ---2 tier model--standard--no changes
+
+dynamic method--  3 tier model--changed upted
+
+windows-IIS webserver tool-internet information service-- webserver--C:inetpub/wwwroot/
+
+linux--apche tool -- /var/www/html
+
+Appserver-- web logic, jboss,tomcat,websp,glassfish etc...
+
+security group--
+
+Webservice---http and https  
+
+all aws no--65535 all traffic number
+
+linux--comments
+
+sudo su - root
+
+yum install httpd
+
+yes--acknowlogement
+
+clear--
+
+service httpd start
+
+service httpd status
+
+apche tool install
+
+chmod 777 /var/www/html
+
+wincsp tool download
+
+read--4
+
+write--2
+
+execute--1
+
+user/root/others
+7/7/7
+
+774--
+777--fb.com
+074--greenstech
+
+
+
+
+
+
+       
+
+
+
+
+
+
+

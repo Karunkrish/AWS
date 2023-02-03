@@ -1,0 +1,71 @@
+IAM - Identity Access Management
+
+Security Engineering
+
+User level security (IAM) - Access
+
+User manage place is IAM 
+1. Monitoring
+2. Do and Don'ts
+3. Restriction
+
+Two types of users to manage
+1. Root users 
+2. IAM users
+
+GUI - Graphical user interface--windows----
+CLI - Command line interface --linux----
+
+Root user Access: (GUI)
+
+URL
+Username
+Password
+
+Root user : (CLI)
+Access key
+Secret key
+
+IAM user (Subuser)
+
+GUI (Graphical user interface)
+Username
+Password
+
+CLI (Command line interface)
+Access key
+Secret key
+
+4 components
+Groups
+Users
+Roles
+Policy
+
+comments--
+
+sudo su - root
+aws s3 ls
+aws configure
+access key
+secret key
+region
+output format-json
+aws s3 ls
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+

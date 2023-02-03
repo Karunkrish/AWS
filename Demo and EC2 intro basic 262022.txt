@@ -1,0 +1,124 @@
+AWS--Amazon web service--cloud
+
+aws--cloud--real time project
+
+deveops--real time project
+
+phython--
+
+linux--
+
+aws--server producer platform
+
+aws--amazon
+
+azure-- microsoft 
+
+gcp--google cloud platform
+
+85%
+
+aws--45%
+
+server room
+
+physical server
+
+IAAS
+server
+storage
+network
+
+PAAS
+database
+security
+
+SAAS
+application running process
+
+physical server to virtual server--cloud technology
+
+cloud--computing technology
+
+virtual server--
+
+IAAS-infrastecture as a service
+
+PAAS---platform
+
+SAAS--software 
+
+solution arch--
+
+deveops--developement plus operation
+
+methodology
+
+sdlc--software development life cycle
+
+requirement analysis
+
+planning
+
+design
+
+coding--developers--
+
+testing--git ,ansible/terraform, maven, docker, splunk,jenkins,prometheos, grafana,salt stuck
+
+deployment--
+
+ci --
+cd--
+
+water fall model
+
+ agile model
+deveops model
+
+RIR--remote internet rental
+
+on demand resource through internet with pay as you go 
+
+cloud--webservice--provider---
+
+23 service
+
+phython
+
+linux--
+
+ec2--elastic compute cloud--server
+
+five models
+
+server--instance--nodes--glacier--machine --image
+
+free tier instance--monthly 750 hrs--study material--12 month free ya
+
+on demand instance--cost high--unlimited-durability--rs 100--unplanned business--
+
+reserved instance--cost normal--unlimited-durability---rs 60--planned business--12 month-8 month--4 month
+
+spot instance--limit--valid--cost low--rs 40
+
+deticate instance--private instance--
+
+
+windows--rdb port--3389---pem file--rdc tool
+
+linux--ssh port--22--ppk file--putty tool
+
+os
+
+ram
+
+vcpu
+
+storage--0 to 16tb--100 volume
+
+
+
+
+
+
