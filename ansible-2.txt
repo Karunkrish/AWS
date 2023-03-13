@@ -1,0 +1,390 @@
+Ansible Session - 2
+==========================================================================
+Modules:
+	Manage services
+	copy files:
+
+export ANSIBLE_NOCOWS=1;
+sudo yum install cowsay
+
+inventory file : a list of hosts or group of hosts ==> /etc/ansible/hosts
+
+modules : modules are the programs that perform the actual work of the tasks of a play.
+
+
+
+
+/home/ec2-user
+create index.html
+=========================================================================
+ansible-playbook -i slaves.txt first.yml --syntax-check
+ansible-playbook -i slaves.txt first.yml
+=================================================================================
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+  - name: Install the latest version of Apache
+    yum:
+      name: httpd
+      state: latest
+  - name: Start service httpd, if not started
+    service:
+      name: httpd
+      state: started
+  - name: Copy file with owner and permissions
+    copy:
+      src: /home/ec2-user/index.html
+      dest: /var/www/html/index.html
+      mode: '777'
+
+
+ansible-playbook -i slaves.txt first.yml
+execution on progress...
+
+
+Verify: 
+Login with Slave system and check the availability of the index.html.
+=========================================================================================
+
+
+
+loop:
+===========================================================================
+ansible-playbook -i slaves.txt second.yml --syntax-check
+ansible-playbook -i slaves.txt second.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+  - name: installing the latest version of the packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - php
+      - mysql
+      - unzip
+      - http_present
+
+
+
+Explain about Idempotent:
+==========================================================================
+Ansible is an idempotent - if u run the yaml script repeatedly also the same 
+result will be reflect in the slaves...
+
+
+
+
+git installation:
+==========================================================================
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install git
+     yum:
+       name: git
+       state: present
+       update_cache: yes
+
+ansible-playbook -i slaves.txt git.yml
+
+
+
+
+
+jenkins installation using playbook:
+==========================================================================
+ansible all -i slaves.txt -a "sudo amazon-linux-extras install epel" -b
+jenkins.yml
+ansible-playbook -i slaves.txt jenkins.yml --syntax-check
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+      - name: Installing Jenkins on greens machine
+        yum_repository:
+            name: jenkins
+            description: Installing jenkins using repo
+            baseurl: http://pkg.jenkins.io/redhat
+            gpgkey: http://pkg.jenkins.io/redhat/jenkins.io.key
+
+      - name: Install Java and Jenkins
+        yum:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - java
+          - jenkins
+
+      - name: Start Jenkins
+        service:
+          name: jenkins
+          state: started
+
+============================================================================================
+
+################How to change the port to Jenkins 
+
+
+# /etc/default  -- for ubuntu machine
+
+login to slave machine 
+----------------------
+
+/etc/sysconfig -- amazon linux 
+ls -lrt
+sudo vi jenkins  
+
+
+/etc/sysconfig/jenkins
+JENKINS_PORT="8080"
+
+########searching on net jenkins module edit line
+
+- name: Jenkins change port no
+  lineinfile:
+    path: /etc/sysconfig/jenkins
+    regexp: '^JENKINS_PORT='
+    line: JENKINS_PORT={{port}}
+
+#################after modifying the Jenkins files
+
+rm -f jenkins.yml
+vi jenkins.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+    ports: 2323
+  tasks:
+      - name: Installing Jenkins on greens machine
+        yum_repository:
+            name: jenkins
+            description: Installing jenkins using repo
+            baseurl: http://pkg.jenkins.io/redhat
+            gpgkey: http://pkg.jenkins.io/redhat/jenkins.io.key
+
+      - name: Install Java and Jenkins
+        yum:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - java
+          - jenkins
+
+      - name: Start Jenkins
+        service:
+          name: jenkins
+          state: started
+          
+      - name: port no changing
+        lineinfile:
+          path: /etc/sysconfig/jenkins
+          regexp: '^JENKINS_PORT='
+          line: JENKINS_PORT={{ports}}
+
+===============================================================================================
+
+################after add handlers 
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+    ports: 2323
+  tasks:
+      - name: Installing Jenkins on greens machine
+        yum_repository:
+            name: jenkins
+            description: Installing jenkins using repo
+            baseurl: http://pkg.jenkins.io/redhat
+            gpgkey: http://pkg.jenkins.io/redhat/jenkins.io.key
+
+      - name: Install Java and Jenkins
+        yum:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - java
+          - jenkins
+              
+      - name: port no changing
+        lineinfile:
+          path: /etc/sysconfig/jenkins
+          regexp: '^JENKINS_PORT='
+          line: JENKINS_PORT={{ports}}
+
+        notify: restart jenkins   
+      - name: Start Jenkins
+        service:
+          name: jenkins
+          state: started
+  handlers:
+      - name: restart jenkins
+        service:
+          name: jenkins
+          state: restarted
+
+
+ansible-playbook -i slave.txt j.yml -e "ports=3030"
+
+===========================================================
+Final code: for jenkins
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+    ports: 9393
+  tasks:
+  - name: Download jenkins
+    get_url:
+      url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+      dest: /etc/yum.repos.d/jenkins.repo
+
+  - name: jenkins key
+    ansible.builtin.rpm_key:
+      state: present
+      key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+  - name: Install java and jenkins
+    yum:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - java
+      - jenkins
+
+  - name: changing jenkins port no
+    lineinfile:
+      path: /usr/lib/systemd/system/jenkins.service
+      regexp: '^Environment="JENKINS_PORT=8080"'
+      line: Environment="JENKINS_PORT={{ports}}"
+    notify: restart jenkins
+
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
+  
+  - name: Start jenkins
+    ansible.builtin.systemd:
+      name: jenkins
+      state: started
+  handlers:
+  - name: restart jenkins
+    service:
+      name: jenkins
+      state: restarted
+
+
+
+
+
+
+
+
+ 	sudo vi /usr/lib/systemd/system/jenkins.service
+
+
+sudo /etc/init.d/jenkins restart
+   28  sudo service jenkins status
+   29  sudo service jenkins start
+   30  sudo service jenkins stop
+   
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mysql installation using ansible playbook:
+-------------------------------------------------------------------------
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install mysql
+     yum:
+       name: mysql
+       state: present
+       update_cache: yes
+
+ansible-playbook -i slaves.txt mysql.yaml --syntax-check	
+ansible-playbook -i slaves.txt mysql.yaml
+
+
+======================================================================================
+
+Task : how to create ec2 machine using yaml file:
+
+
+hosts: localhost
+  remote_user: ec2-user
+  become: yes
+  tasks:
+    - name: creating ec2
+      ec2:
+        key_name: devops.pem
+        instance_type: t2.micro
+        image: ami-0e742cca61fb65051
+        region: "ap-south-1"
+        count: 1
+        vpc_subnet_id: vpc_subnet_id
+        assign_public_ip: yes
+
+
+1.make changes
+2.create role --> Ec2full_access
+3.sudo pip install boto
+
+
+
+=========================================================================================
+
+
+fetch
+setup
+
+
+
+
+
+Task:
+1. sample.war - apache deployment
+2. http_present - keep as a first package in loop.
+3. how to install the particular version of any software .. esp..git, apache
+4. dev, sit, uat, pre-prod, prod, dr - java / docker
+
+
+https://www.youtube.com/watch?v=0r11MRQ2MUM&list=PLMajL6JMRh6SUYi8yogexoap4CXzFaI7y&index=11
+

@@ -1,0 +1,127 @@
+1. AWS CERTIFICATE MANAGER CREATION
+	- REQUEST PUBLIC CERTIFICATES AS PER THE REGISTERED DOMAINS
+
+2. AWS ROUTE53 SETUP & LINK TO GODADDY DOMAIN DNS MGMT
+	- CREATE HOSTED ZONE
+	- MAP THE N-S UNDER GODADDY DOMAIN
+	- CREATE RECORD SET FROM ACM
+
+
+3. AWS RDS SETUP
+	- CREATE TWO DBS
+		i) PRODUCTION DB (SECURITY GROUP MAKE AS ALL TRAFFIC)
+		ii) DR DB (SECURITY GROUP MAKE AS ALL TRAFFIC)
+
+4. AWS IAM ROLE
+	- CREATE AN IAM ROLE WITH FULL ACCESS
+
+
+
+
+
+User data:
+
+#!/bin/bash
+yum install httpd php-mysql -y
+amazon-linux-extras install -y php7.3
+cd /var/www/html
+echo "healthy" > healthy.html
+wget https://wordpress.org/latest.tar.gz
+tar -xzf latest.tar.gz
+cp -r wordpress/* /var/www/html/
+rm -rf wordpress
+rm -rf latest.tar.gz
+chmod -R 755 wp-content
+chown -R apache:apache wp-content
+wget https://s3.amazonaws.com/bucketforwordpresslab-donotdelete/htaccess.txt
+mv htaccess.txt .htaccess
+chkconfig httpd on
+service httpd start
+
+
+
+
+
+
+
+
+
+1DC - One Domain Credentials
+
+
+
+
+
+For Project Notes:
+
+1. Goto Google.com
+2. Search aws training in Chennai
+3. Click "GreensTechnologys.com" link
+4. control F and find for BLOGS
+5. Search for AWS Project Docs..
+
+
+
+S3 - Two Buckets
+
+1. Media - images, logos, Videos - Size is larger
+2. Code - php file - Size is lesser
+
+
+
+
+
+PRODUCTION:
+
+*/2 * * * * aws s3 sync --delete /var/www/html/wp-content/uploads s3://wordpress-mediaasset-greens2602
+*/2 * * * * aws s3 sync --delete /var/www/html/ s3://wordpress-code-greens2602
+
+DR:
+
+*/2 * * * *  aws s3 sync --delete  s3://wordpress-mediaasset-greens2602 /var/www/html/wp-content/uploads
+*/2 * * * *  aws s3 sync --delete  s3://wordpress-code-greens2602 /var/www/html/
+
+
+
+
+Task 1: 5 R&R ??
+Task 2: Diagram - any One Architect?
+Task 3: Security Services - 2 Services ?
+Reward: 2 Security
+Task 4: Ticketing Tool - Servicenow, HP QC, BMC Remedy
+Reward: JIRA Video & notes
+Task 5: Differiate --> 2tier vs 3tier
+Reward: 3 tier Video
+Task 6: Route53 Record Set Types?
+Task 7: Failover Recovery: Clue: Failover
+Rewards: Another Project: eCommerce Project
+
+
+
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring-scripts-intro.html
+
+
+
+
+Task 1: 5 R&R ??
+Task 2: Diagram - any One Architect?
+Task 3: Security Services - 2 Services ?
+Reward: 2 Security
+Task 4: Ticketing Tool - Servicenow, HP QC, BMC Remedy
+Reward: JIRA Video & notes
+Task 5: Differiate --> 2tier vs 3tier
+Reward: 3 tier Video
+Task 6: Route53 Record Set Types?
+Task 7: Failover Recovery: Clue: Failover
+Rewards: Another Project: eCommerce Project
+Task 8: Blogs Learning
+
+
+
+For Project Notes:
+
+1. Goto Google.com
+2. Search aws training in Chennai
+3. Click "GreensTechnologys.com" link
+4. control F and find for BLOGS
+5. Search for AWS Project Docs..

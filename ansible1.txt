@@ -1,0 +1,332 @@
+
+   *********************************ANSIBLE***********************************************
+ 
+
+Ansible - Configuration management tool also called as a deployment tool
+===========================================================================================
+
+Devops periodic table ::: Configuration Automation
+------------------------------------------------------------------------------------------
+
+Terraform vs Ansible
+
+Terrafrom - civil engg / Environmental build tool / HashiCorp Configuration Language (HCL)
+            Cloud-premises 
+
+Ansible   - Interior work /
+---------------------------------------------------------------------------------------
+
+ Master and Slave concept 
+
+1 Master     -    4 slaves (Dev , Test, Prod , DR)
+yml / Redhat / unix 
+
+Control Node (Commanding)   - Slaves (Execution) - manage node
+
+---------------------------------------------------------------------------------------
+
+Limitations: Single master and we can't use windows machine as a master
+
+----------------------------------------------------------------------------------------
+
+ansible -- push -- agentless
+
+salt stack -- push/pull
+
+chef   } pull
+puppet }
+
+
+
+Master and slave connectivity
+
+pageant -- ppk repository - 25 ppks
+
+
+
+3 ways: ansible installation::: 
+
+pip - python installation package
+yum -- linux
+apt -- ubuntu
+
+
+invertory file :: /etc/ansible/hosts
+config file :: /etc/ansible/ansible.cfg
+
+
+
+
+
+ 
+#! /bin/bash
+yum install python-pip -y
+
+------------------------------------------------
+
+login to master : using pegeant tool
+
+sudo pip install ansible
+
+create vi slave.txt and add slave's private ip address
+
+wget https://raw.githubusercontent.com/ansible/ansible/stable-2.9/examples/ansible.cfg
+
+ls -lrt
+
+vi ansible.cfg
+
+host_key_checking = False
+
+=====================================================================================================
+
+Adhoc Command - single task execution :::::::::
+
+ansible all -i slave.txt -m ping
+
+ansible all -i slave.txt -a "uname -a"
+
+
+ansible all -i slave.txt -a "uptime"
+
+ansible all -i slave.txt -a "yum install git -y" -b
+
+ansible text -i slave.txt -a "yum install mysql -y" -b
+
+
+
+=============================================================================================================
+
+Install apache on slave machine:::
+
+yum install httd
+service start httpd
+copy index.html
+
+
+ansible prod -i slave.txt -m yum -a "name=httpd state=present" -b
+ansible prod -i slave.txt -m service -a "name=httpd state=started" -b
+
+vi index.html
+
+ansible prod -i slave.txt -m copy -a "src=/home/ec2-user/index.html dest=/var/www/html/index.html" -b
+
+
+===============================================================================================================
+
+Task:  ubuntu - install ansible using apt-get
+
+============================================================================================================
+
+
+yaml
+
+
+
+Inventory files:
+
+1. static
+2. dynamic
+
+configuration files = backend file
+ 
+  
+
+
+adhoc command -- single task
+vi slaves.txt
+ansible all -i slaves.txt -m ping
+
+state:
+1.present/latest = install
+2.absent = uninstall
+3.started = start
+4.stopped = stop
+5.restarted = restart
+
+Ansible Components:
+1. Adhoc Command - single task execution 
+2. Playbook      - yml (multitasking)   - active project - online
+3. Vault         - Encryption - security reason
+4. roles         - offline template - Ansible Galaxy
+
+=========================================================================================================================
+
+
+  ****************************Ansible 2 ************************************************::
+
+
+
+=> Adhoc - single task
+=> grouping -- 
+
+
+Chmod 777 --- default user / root / grps or others
+
+
+export TIMEOUT=0;
+
+
+Modules:
+	Manage services
+	copy files:
+
+/home/ec2-user
+create index.html
+
+ansible-playbook -i slaves.txt first.yml --syntax-check
+ansible-playbook -i slaves.txt first.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+  - name: Install the latest version of Apache
+    yum:
+      name: httpd
+      state: latest
+  - name: Start service httpd, if not started
+    service:
+      name: httpd
+      state: started
+  - name: Copy file with owner and permissions
+    copy:
+      src: /home/ec2-user/index.html
+      dest: /var/www/html/index.html
+      mode: '777'
+
+
+ansible-playbook -i slaves.txt first.yml
+execution on progress...
+
+
+Verify: 
+Login with Slave system and check the availability of the index.html.
+
+
+
+
+loop:
+===========================================================================
+ansible-playbook -i slaves.txt second.yml --syntax-check
+ansible-playbook -i slaves.txt second.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+  - name: installing the latest version of the packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    loop:
+      - php
+      - mysql
+      - unzip
+      - http_present
+
+
+
+Explain about Idempotent:
+==========================================================================
+Ansible is an idempotent - if u run the yaml script repeatedly also the same 
+result will be reflect in the slaves...
+
+
+
+
+git installation:
+==========================================================================
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install git
+     yum:
+       name: git
+       state: present
+       update_cache: yes
+
+ansible-playbook -i slaves.txt git.yml
+
+
+
+
+
+jenkins installation using playbook:
+==========================================================================
+ansible all -i slaves.txt -a "sudo amazon-linux-extras install epel" -b
+jenkins.yml
+ansible-playbook -i slaves.txt jenkins.yml --syntax-check
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+      - name: Installing Jenkins on greens machine
+        yum_repository:
+            name: jenkins
+            description: Installing jenkins using repo
+            baseurl: http://pkg.jenkins.io/redhat
+            gpgkey: http://pkg.jenkins.io/redhat/jenkins.io.key
+
+      - name: Install Java and Jenkins
+        yum:
+          name: "{{ item }}"
+          state: present
+        loop:
+          - java
+          - jenkins
+
+      - name: Start Jenkins
+        service:
+          name: jenkins
+          state: started
+
+
+mysql installation using ansible playbook:
+-------------------------------------------------------------------------
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install mysql
+     yum:
+       name: mysql
+       state: present
+       update_cache: yes
+
+ansible-playbook -i slaves.txt mysql.yaml --syntax-check	
+ansible-playbook -i slaves.txt mysql.yaml
+
+
+Idempotent : ansible - avoids duplication effort.
+
+
+export ANSIBLE_NOCOWS=1;
+
+
+Task:
+1. sample.war - apache deployment
+2. http_present - keep as a first package in loop.
+3. how to install the particular version of any software .. esp..git, apache
+4. dev, sit, uat, pre-prod, prod, dr - java / docker
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

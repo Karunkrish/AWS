@@ -1,0 +1,591 @@
+Ansible modules Website go through
+
+Task: handler/block/inline/pre-tasks/post-tasks
+
+Module:tags
+-----------
+Enable to run particular portiion of the task in a big playbook...tag can skip / 
+
+
+---
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: be sure ntp is installed
+     yum:
+       name: ntp
+       state: present
+     tags: ntp
+   - name: be sure ntp is configured
+     template:
+       src: ntp.conf.j2
+       dest: /etc/ntp.conf
+     notify:
+     - restart ntpd
+     tags: restart
+   - name: be sure ntpd is running and enabled
+     service:
+       name: ntpd
+       state: started
+       enabled: yes
+     tags: enable
+
+ansible-playbook -i slaves.txt tagg.yaml --syntax-check
+
+
+Ansible Vault
+==========================================================================
+Most of the times when sensitive or confidential data need to be 
+protected in the playbook, then it can be encrypted rather than 
+just keeping it in a text file which is readable by all. 
+Ansible Vault allows you to encrypt the playbook to protect the 
+confidential data.
+
+For Example, consider the following task where a confidential 
+job agreement is being copied.
+In such cases, you would need an Ansible Vault.
+
+   ansible-vault create first.yml
+   cat first.yml
+   ansible-playbook -i slave.txt first.yml --ask-vault-pass
+   ansible-vault view vijay.yml
+   ansible-vault edit first.yml
+   ansible-vault rekey first.yml
+   clear
+   ansible-vault decrypt vijay.yml
+   cat first.yml
+  
+
+
+How to create one Encrypted yaml file and password protect on the same:
+==========================================================================
+Creating a new encrypted file  :
+================================
+To create new encrypted files with vault use the ansible-vault create command.
+
+$ ansible-vault create first.yml
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install git
+     yum:
+       name: git
+       state: present
+       update_cache: yes
+
+$ cat first.yml
+
+
+run a encrypted playbook:
+Use the option –ask-vault-pass with the ansible-playbook command.
+$ ansible-playbook -i slaves.txt first.yaml --ask-vault-pass
+
+
+
+How to Encrypt the Existing Ansible playbook
+=========================================================
+$ vi second.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+   - name: Install mysql
+     yum:
+       name: mysql
+       state: present
+       update_cache: yes
+
+encrypt a playbook
+$ ansible-vault encrypt second.yml
+Password will again be asked for encryption.
+
+run a encrypted playbook:
+$ ansible-playbook -i slaves.txt second.yml --ask-vault-pass
+
+
+
+Viewing encrypted file
+=======================
+Use the command ansible-vault view to look at the actual contents of the file.
+
+$ ansible-vault view second.yml
+You will be asked for the password again to look at the contents of the file.
+
+
+
+Editing encrypted files
+=======================
+If you need to edit the file use the command ansible-vault edit
+
+$ ansible-vault edit second.yml
+Enter the password to edit the file.
+
+
+
+Changing password of the encrypted files
+=======================================================================
+Use the command ansible-vault rekey to change the password of the file.
+$ ansible-vault rekey second.yml
+
+run a playbook:
+$ ansible-playbook users.yml --ask-vault-pass
+
+
+
+Manually decrypting the encrypted files
+==========================================================================
+Use the command ansible-vault decrypt command.
+$ ansible-vault decrypt second.yml
+
+
+********************************************************************************
+
+task : create one password1.yml
+
+username: admin
+password: admin123
+
+
+create another yaml file like password2.yml
+
+- hosts: all
+    remote_user: ec2-user
+    become: yes
+    vars_files:
+      password1.yml
+    tasks:
+    - name: we are tesing echo command
+      debug:
+        meg: "hello my username is {{username}} &  pass is {{admin123}}"
+
+:wq!
+
+
+ansible-playbook -i slaves.txt password2.yml
+
+*************************************************************************************
+
+Ansible Roles ::
+
+
+ansible-galaxy init apache
+ls -lrt
+cd apache/
+ls -lrt
+
+sudo yum install tree -y 
+tree apache/
+
+cd apache/meta
+vi meta
+
+cd ..
+
+tree apache/
+
+vi apache/tasks/main.yml 
+
+- name: Install the latest version of Apache
+   yum:
+     name: httpd
+      state: latest
+  - name: Start service httpd, if not started
+    service:
+      name: httpd
+      state: started
+  - name: Copy file with owner and permissions
+    copy:
+      src:  index.html                                   
+      dest: /var/www/html/index.html
+      mode: '777'
+
+
+cd apache/files/
+
+vi index.html
+
+This ansible3
+
+:Wq!
+
+
+create one yml file like vi roles.apache.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  roles:
+  - apache
+  
+
+
+ansible-playbook -i slave.txt roles.apache.yml 
+==================================================================================================
+
+---
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+  - name: Install the latest version of Apache
+    yum:
+     name: httpd2323
+     state: latest
+     tags:
+      - install
+  - name: Start service httpd, if not started
+    service:
+      name: httpd
+      state: started
+      tags:
+        - start
+  - name: Copy file with owner and permissions
+    copy:
+      src:  /home/ec2-user/index.html
+      dest: /var/www/html/index.html
+      mode: '777'
+      tags:
+        - copy
+
+
+
+=================================================================================================================
+===========================================================================================================
+
+ignore_errors: yes
+
+httpd.yml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  tasks:
+
+  - name: Install the latest version of Apache
+    yum:
+      name: httpd232323
+      state: latest
+      ignore_errors: yes
+      tags:
+        - install
+ 
+  - name: Start service httpd, if not started
+    service:
+      name: httpd
+      state: started
+     tags:
+        - start
+  - name: Copy file with owner and permissions
+    copy:
+      src: /home/ec2-user/index.html
+      dest: /var/www/html/index.html
+      mode: '777'
+
+
+================================================================================================================
+===================================================================================================================
+
+tags:
+- update
+
+ansible-playbook -i slave.txt httpd.yml --tags install
+ansible-playbook -i slave.txt httpd.yml --skip-tags install
+
+
+=================================================================================================================
+====================================================================================================================
+
+1. yum update
+2. Java install
+3. tomcat download
+4. unzip tomcat
+5. start tomcat 
+6. tomcat port change
+7. java deployment
+
+
+
+
+Tomcat installation using Ansible Playbook:
+=========================================================================
+vi tomcat.yaml
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+  tasks:
+   - name: update all
+     yum:
+      name: '*'
+      state: present
+   - name: Install java
+     yum:
+      name: java-1.8.0-openjdk
+      state: present
+   - name: Download tomcat
+     get_url:
+      url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.71/bin/apache-tomcat-9.0.71.tar.gz
+      dest: /opt
+      mode: '0777'
+   - name: Unarchive the binaries
+     unarchive:
+      src: /opt/apache-tomcat-9.0.71.tar.gz
+      dest: /opt
+      remote_src: yes
+      mode: '0777'
+   - name: start tomcat
+     shell: nohup /opt/apache-tomcat-9.0.71/bin/startup.sh &
+     
+
+ansible-playbook -i slaves.txt tom.yaml --syntax-check
+ansible-playbook -i slaves.txt tom.yaml
+
+Connect to the slave machine and check on the tomcat installation.
+
+
+port no change 
+
+scp ec2-user@172.31.34.123:/opt/apache-tomcat-9.0.71/conf/server.xml .
+vi server.xml
+{{tomcat_port}}
+
+mv server.xml server.xml.j2
+
+=======================================================================================
+=====================================================================================
+
+template
+
+- name: Template 
+     template:
+      src: /home/ec2-user/server.xml.j2
+      dest: /opt/apache-tomcat-9.0.71/conf/server.xml
+      mode: '0777'
+
+
+=======================================================================================
+=======================================================================================
+
+
+Modules:
+
+lineinfile
+ping
+yum
+apt
+copy
+service
+template
+unarchive
+get_url
+
+local_action
+delegate_to 
+
+
+================================================================================
+===================================================================================
+
+
+
+Ansible Roles and Galaxy:
+=========================================================================
+Roles - Automated Repository file for the reusable...
+Galaxy - Where we can keep the roles for the reusable - offline.
+
+
+sudo su -
+vi slaves.txt
+vi ansible.cfg
+
+mkdir playbooks
+cd playbooks
+vim install_httpd.yaml
+ls
+cd ..
+mkdir roles
+cd roles/
+ansible-galaxy init --help
+ansible-galaxy init httpd --offline
+ls -lart
+cd httpd/
+ls -lart
+tree
+sudo yum install tree -y
+tree
+cd tasks/
+vim main.yml
+cd ..
+cd files/
+vim index.html
+cd ../handlers/
+ls
+vim main.yml
+cat ../tasks/main.yml
+cat main.yml
+
+---
+- name: Installing httpd
+  hosts: localhost
+  become: true
+  roles:
+    - httpd
+---
+# tasks file for httpd
+- name: Installing httpd
+  yum:
+    name: httpd
+    state: latest
+  notify: restart httpd
+- name: copying files
+  copy:
+    src: index.html
+    dest: "{{ dest }}/index.html"
+    mode: 0766
+  notify: restart httpd
+
+
+----------------------------
+<html>
+        <body bgcolor="yellow">
+                <h1>Welcome to Greenstechnology</h1>
+        </body>
+</html>
+
+------------------------------
+
+
+How to install ansible through yum package and connect the slave:
+==========================================================================
+ec2-user
+sudo amazon-linux-extras install ansible2
+ansible --version
+cd /etc/ansible
+ls
+vi ansible.cfg
+sudo vi /etc/ansible/hosts         // Insert the Slaves private ips
+sudo vi /etc/ansible/ansible.cfg   // Cfg file has to be amended 
+Host_Key_Checking=False
+ansible all -i hosts -m ping
+
+
+
+========================
+final code :: tomcat
+
+- hosts: all
+  remote_user: ec2-user
+  become: yes
+  vars:
+   tomcat_port: 9090
+  tasks:
+   - name: update all
+     yum:
+      name: '*'
+      state: present
+   - name: Install java
+     yum:
+      name: java-1.8.0-openjdk
+      state: present
+   - name: Download tomcat
+     get_url:
+      url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.71/bin/apache-tomcat-9.0.71.tar.gz
+      dest: /opt
+      mode: '0777'
+   - name: Unarchive the binaries
+     unarchive:
+      src: /opt/apache-tomcat-9.0.71.tar.gz
+      dest: /opt
+      remote_src: yes
+      mode: '0777'
+   - name: Template 
+     template:
+      src: /home/ec2-user/server.xml.j2
+      dest: /opt/apache-tomcat-9.0.71/conf/server.xml
+      mode: '0777' 
+   - name: stop tomcat
+     shell: nohup /opt/apache-tomcat-9.0.71/bin/shutdown.sh &
+   - name: start tomcat
+     shell: nohup /opt/apache-tomcat-9.0.71/bin/startup.sh &
+     tags:
+      - start
+   - name: copy
+     copy:
+       src: /home/ec2-user/sample.war
+       dest: /opt/apache-tomcat-9.0.71/webapps
+       mode: '0777'
+
+
+-e "tomcat_port= 7070"
+
+https://tomcat.apache.org/tomcat-7.0-doc/appdev/sample/sample.war
+=====================================================================
+
+https://www.youtube.com/watch?v=CPSC6X5S5_o&list=PLMajL6JMRh6SUYi8yogexoap4CXzFaI7y
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Repeated Interview Questions and Answers:
+==========================================================================
+
+
+
+
+
+greenscloud1005@gmail.com
+Pass12!@
+
+
+https://www.youtube.com/watch?v=JHoy3lDZOfY
+
+https://www.youtube.com/watch?v=Z3SYDTMP3ME
+
+https://www.youtube.com/watch?v=ZbG0c87wcM8&list=PL9gnSGHSqcnoqBXdMwUTRod4Gi3eac2Ak
+
+https://www.youtube.com/watch?v=LMsstjAzC9U
+
+
+
+
+
+
+
+
+
+
+
+
+
+
